@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>OptimAL Business Operations</title>
+</head>
+
+<body>
+    <h2>OptimAL Business Operations Control Center</h2>
+
+    <p>This interface provides access to core business operations:</p>
+
+    <ul>
+        <li><strong>Customer Management:</strong> Export, reporting, and dashboard functions</li>
+        <li><strong>Analytics & Reporting:</strong> Sales analysis and revenue calculations</li>
+        <li><strong>Order Processing:</strong> Batch operations and order management</li>
+        <li><strong>Data Management:</strong> Test data generation and maintenance</li>
+    </ul>
+
+    <p>Execute operations to test system performance and identify optimization opportunities.</p>
+
+    <h3>Ensuring Adequate Test Data</h3>
+
+    <p>Most performance tests require a minimum of <strong>25,000 records</strong> in the Performance Test Data Source
+        table
+        to produce meaningful results and demonstrate optimization improvements.</p>
+
+    <p><strong>To check your current record count:</strong></p>
+    <p>View the <strong>"Test Data Statistics"</strong> section on this page to see how many Data Source records exist.
+    </p>
+
+    <p><strong>If you have fewer than 25,000 records:</strong></p>
+    <ol>
+        <li>Locate the <strong>"Generate More Test Data"</strong> action</li>
+        <li>Click the action to create additional records</li>
+        <li>The system will generate records in batches until you reach the required minimum</li>
+        <li>Wait for the generation process to complete (this may take a few minutes)</li>
+        <li>Verify the record count has increased to at least 25,000</li>
+    </ol>
+
+    <p><em>Note: Data generation runs in the background via job queue entries. You can continue working while
+            records are being created.</em></p>
+</body>
+
+</html>

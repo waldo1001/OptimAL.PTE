@@ -1,0 +1,45 @@
+{
+    "id": "78476316-9214-45ea-96f4-6b752f033b99",
+    "name": "OptimAL.PTE",
+    "publisher": "waldo",
+    "version": "1.0.0.6",
+    "brief": "Performance Test Extension for OptimAL Escape Room",
+    "description": "Contains unoptimized code demonstrating BC performance problems",
+    "privacyStatement": "",
+    "EULA": "",
+    "help": "",
+    "url": "",
+    "logo": "",
+    "dependencies": [
+        {
+            "id": "5fc8521a-aed8-4a92-920e-9bb9229523f2",
+            "name": "OptimAL.EscapeRoom1",
+            "publisher": "waldo",
+            "version": "1.0.0.0"
+        }
+    ],
+    "screenshots": [],
+    "platform": "1.0.0.0",
+    "application": "27.0.0.0",
+    "idRanges": [
+        {
+            "from": 74300,
+            "to": 74399
+        }
+    ],
+    "runtime": "15.0",
+    "features": [
+        "NoImplicitWith"
+    ],
+    "resourceExposurePolicy": {
+        "allowDebugging": true,
+        "allowDownloadingSource": true,
+        "includeSourceInSymbolFile": true
+    },
+    "resourceFolders": [
+        "Resources"
+    ],
+    "source": {
+        "repositoryUrl": "https://github.com/waldo1001/OptimAL.PTE"
+    }
+}
