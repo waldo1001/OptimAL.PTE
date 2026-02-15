@@ -44,6 +44,51 @@ page 74302 "Performance Test Customer Card"
                     ToolTip = 'Specifies the customer status.';
                 }
             }
+            group(Details)
+            {
+                Caption = 'Details';
+
+                field(Description; Rec.Description)
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the customer description.';
+                }
+                field(Notes; Rec.Notes)
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies notes for the customer.';
+                }
+                field("Extended Address"; Rec."Extended Address")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the extended address details.';
+                }
+                field("Contact Information"; Rec."Contact Information")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies contact information.';
+                }
+                field("Shipping Instructions"; Rec."Shipping Instructions")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies shipping instructions.';
+                }
+                field("Payment Terms Detail"; Rec."Payment Terms Detail")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies payment terms details.';
+                }
+                field("Internal Comments"; Rec."Internal Comments")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies internal comments.';
+                }
+                field("Compliance Notes"; Rec."Compliance Notes")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies compliance notes.';
+                }
+            }
             group(Statistics)
             {
                 Caption = 'Statistics';

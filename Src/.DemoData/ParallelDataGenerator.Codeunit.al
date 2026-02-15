@@ -97,6 +97,7 @@ codeunit 74393 "Parallel Data Generator"
                 DataSource.City := 'City ' + Format(i mod 100);
                 DataSource."Phone No." := '+1-555-' + Format(i, 0, '<Integer,4><Filler Character,0>');
                 DataSource.Status := DataSource.Status::New;
+                FillLargeTextFields(DataSource, i);
                 DataSource.Insert();
             end;
         end;
@@ -111,6 +112,7 @@ codeunit 74393 "Parallel Data Generator"
                 Customer.City := 'City ' + Format(i mod 100);
                 Customer."Phone No." := '+1-555-' + Format(i, 0, '<Integer,4><Filler Character,0>');
                 Customer.Status := Customer.Status::New;
+                FillLargeTextFields(Customer, i);
                 Customer.Insert();
             end;
         end;
@@ -133,5 +135,29 @@ codeunit 74393 "Parallel Data Generator"
                 end;
             end;
         end;
+    end;
+
+    local procedure FillLargeTextFields(var Customer: Record "Performance Test Customer"; i: Integer)
+    begin
+        Customer.Description := PadStr(StrSubstNo('Customer %1 is a valued business partner specializing in various product lines and services across multiple regions. Established operations include wholesale distribution, retail partnerships, and direct-to-consumer channels with comprehensive logistics support.', i), 2048, ' ');
+        Customer.Notes := PadStr(StrSubstNo('Account %1 notes: Regular quarterly reviews scheduled. Credit limit approved at standard tier. Preferred communication method is email. Key contacts updated annually. Compliance documentation on file and verified.', i), 2048, ' ');
+        Customer."Extended Address" := PadStr(StrSubstNo('Building %1, Suite %2, Industrial Park Zone %3, Regional Distribution Center, Warehouse Complex North Wing, Loading Dock B, Floor 3', i, i mod 500, i mod 50), 2048, ' ');
+        Customer."Contact Information" := PadStr(StrSubstNo('Primary: John Smith (+1-555-%1). Secondary: Jane Doe (+1-555-%2). Emergency: Operations Center (+1-555-%3). Fax: +1-555-%4. Email: contact%1@example.com', Format(i, 0, '<Integer,4><Filler Character,0>'), Format(i + 1, 0, '<Integer,4><Filler Character,0>'), Format(i + 2, 0, '<Integer,4><Filler Character,0>'), Format(i + 3, 0, '<Integer,4><Filler Character,0>')), 2048, ' ');
+        Customer."Shipping Instructions" := PadStr(StrSubstNo('Delivery for account %1: Use north entrance. Require signature on delivery. Fragile items must be marked. Temperature-controlled storage required for perishable goods. Weekend deliveries accepted with prior arrangement. Contact warehouse manager before arrival.', i), 2048, ' ');
+        Customer."Payment Terms Detail" := PadStr(StrSubstNo('Account %1 payment terms: Net 30 standard. Early payment discount 2/10. Wire transfer preferred for amounts over 10000. Purchase order required for all transactions. Monthly statement reconciliation mandatory. Credit terms reviewed annually.', i), 2048, ' ');
+        Customer."Internal Comments" := PadStr(StrSubstNo('Internal ref %1: Account managed by regional team. Annual revenue target set during Q1 planning. Customer satisfaction score tracked quarterly. Escalation path through regional manager. SLA compliance monitored monthly. Historical performance data archived.', i), 2048, ' ');
+        Customer."Compliance Notes" := PadStr(StrSubstNo('Compliance record %1: All regulatory requirements verified. Tax exemption certificate on file (expires annually). Export compliance classification reviewed. Data protection agreement signed. Industry-specific certifications validated. Audit trail maintained for all transactions.', i), 2048, ' ');
+    end;
+
+    local procedure FillLargeTextFields(var DataSource: Record "Performance Test Data Source"; i: Integer)
+    begin
+        DataSource.Description := PadStr(StrSubstNo('Customer %1 is a valued business partner specializing in various product lines and services across multiple regions. Established operations include wholesale distribution, retail partnerships, and direct-to-consumer channels with comprehensive logistics support.', i), 2048, ' ');
+        DataSource.Notes := PadStr(StrSubstNo('Account %1 notes: Regular quarterly reviews scheduled. Credit limit approved at standard tier. Preferred communication method is email. Key contacts updated annually. Compliance documentation on file and verified.', i), 2048, ' ');
+        DataSource."Extended Address" := PadStr(StrSubstNo('Building %1, Suite %2, Industrial Park Zone %3, Regional Distribution Center, Warehouse Complex North Wing, Loading Dock B, Floor 3', i, i mod 500, i mod 50), 2048, ' ');
+        DataSource."Contact Information" := PadStr(StrSubstNo('Primary: John Smith (+1-555-%1). Secondary: Jane Doe (+1-555-%2). Emergency: Operations Center (+1-555-%3). Fax: +1-555-%4. Email: contact%1@example.com', Format(i, 0, '<Integer,4><Filler Character,0>'), Format(i + 1, 0, '<Integer,4><Filler Character,0>'), Format(i + 2, 0, '<Integer,4><Filler Character,0>'), Format(i + 3, 0, '<Integer,4><Filler Character,0>')), 2048, ' ');
+        DataSource."Shipping Instructions" := PadStr(StrSubstNo('Delivery for account %1: Use north entrance. Require signature on delivery. Fragile items must be marked. Temperature-controlled storage required for perishable goods. Weekend deliveries accepted with prior arrangement. Contact warehouse manager before arrival.', i), 2048, ' ');
+        DataSource."Payment Terms Detail" := PadStr(StrSubstNo('Account %1 payment terms: Net 30 standard. Early payment discount 2/10. Wire transfer preferred for amounts over 10000. Purchase order required for all transactions. Monthly statement reconciliation mandatory. Credit terms reviewed annually.', i), 2048, ' ');
+        DataSource."Internal Comments" := PadStr(StrSubstNo('Internal ref %1: Account managed by regional team. Annual revenue target set during Q1 planning. Customer satisfaction score tracked quarterly. Escalation path through regional manager. SLA compliance monitored monthly. Historical performance data archived.', i), 2048, ' ');
+        DataSource."Compliance Notes" := PadStr(StrSubstNo('Compliance record %1: All regulatory requirements verified. Tax exemption certificate on file (expires annually). Export compliance classification reviewed. Data protection agreement signed. Industry-specific certifications validated. Audit trail maintained for all transactions.', i), 2048, ' ');
     end;
 }

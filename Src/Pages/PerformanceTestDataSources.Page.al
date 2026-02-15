@@ -42,6 +42,46 @@ page 74304 "Performance Test Data Sources"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the status.';
                 }
+                field(Description; Rec.Description)
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the description.';
+                }
+                field(Notes; Rec.Notes)
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies notes.';
+                }
+                field("Extended Address"; Rec."Extended Address")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the extended address details.';
+                }
+                field("Contact Information"; Rec."Contact Information")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies contact information.';
+                }
+                field("Shipping Instructions"; Rec."Shipping Instructions")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies shipping instructions.';
+                }
+                field("Payment Terms Detail"; Rec."Payment Terms Detail")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies payment terms details.';
+                }
+                field("Internal Comments"; Rec."Internal Comments")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies internal comments.';
+                }
+                field("Compliance Notes"; Rec."Compliance Notes")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies compliance notes.';
+                }
             }
         }
     }
