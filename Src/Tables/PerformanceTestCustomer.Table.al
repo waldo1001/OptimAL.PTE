@@ -51,6 +51,46 @@ table 74300 "Performance Test Customer"
             Caption = 'Status';
             DataClassification = CustomerContent;
         }
+        field(10; "Description"; Text[2048])
+        {
+            Caption = 'Description';
+            DataClassification = CustomerContent;
+        }
+        field(11; "Notes"; Text[2048])
+        {
+            Caption = 'Notes';
+            DataClassification = CustomerContent;
+        }
+        field(12; "Extended Address"; Text[2048])
+        {
+            Caption = 'Extended Address';
+            DataClassification = CustomerContent;
+        }
+        field(13; "Contact Information"; Text[2048])
+        {
+            Caption = 'Contact Information';
+            DataClassification = CustomerContent;
+        }
+        field(14; "Shipping Instructions"; Text[2048])
+        {
+            Caption = 'Shipping Instructions';
+            DataClassification = CustomerContent;
+        }
+        field(15; "Payment Terms Detail"; Text[2048])
+        {
+            Caption = 'Payment Terms Detail';
+            DataClassification = CustomerContent;
+        }
+        field(16; "Internal Comments"; Text[2048])
+        {
+            Caption = 'Internal Comments';
+            DataClassification = CustomerContent;
+        }
+        field(17; "Compliance Notes"; Text[2048])
+        {
+            Caption = 'Compliance Notes';
+            DataClassification = CustomerContent;
+        }
     }
 
     keys
