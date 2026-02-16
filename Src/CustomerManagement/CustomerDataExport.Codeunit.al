@@ -6,6 +6,7 @@ codeunit 74310 "Customer Data Export"
     var
         Customer: Record "Performance Test Customer";
     begin
+        Customer.SetLoadFields("No.", Name, City);
         Customer.FindSet();
         repeat
             ExportCustomerToFile(Customer);
