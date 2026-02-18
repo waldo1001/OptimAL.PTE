@@ -40,7 +40,7 @@ codeunit 74391 "Upgrade OptimAL PTE"
         if not Customer.FindSet() then
             exit;
 
-        Archive.DeleteAll(); // Clear target table before migration
+        Archive.Truncate(); // Clear target table before migration
 
         repeat
             Archive.Init();
