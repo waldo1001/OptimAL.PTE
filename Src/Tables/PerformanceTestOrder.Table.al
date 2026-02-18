@@ -47,6 +47,7 @@ table 74301 "Performance Test Order"
         key(CustomerKey; "Customer No.")
         {
             // Key for customer relationship queries
+            SumIndexFields = Amount;
         }
     }
 }
