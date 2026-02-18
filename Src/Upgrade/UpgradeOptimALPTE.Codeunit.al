@@ -65,6 +65,7 @@ codeunit 74391 "Upgrade OptimAL PTE"
         Customer: Record "Performance Test Customer";
     begin
         // Updating field values after migration
+        Customer.SetLoadFields(Status);
         Customer.SetFilter("No.", 'CUST-*');
         if not Customer.FindSet(true) then
             exit;
