@@ -35,6 +35,8 @@ codeunit 74391 "Upgrade OptimAL PTE"
         Customer: Record "Performance Test Customer";
     begin
         // Migrating from legacy system during upgrade
+        // Only load the fields we actually copy - ignore the large text fields
+        DataSource.SetLoadFields("No.", Name, Address, City, "Phone No.");
         if not DataSource.FindSet() then
             exit;
 
@@ -47,14 +49,6 @@ codeunit 74391 "Upgrade OptimAL PTE"
             Customer.Address := DataSource.Address;
             Customer.City := DataSource.City;
             Customer."Phone No." := DataSource."Phone No.";
-            Customer.Description := DataSource.Description;
-            Customer.Notes := DataSource.Notes;
-            Customer."Extended Address" := DataSource."Extended Address";
-            Customer."Contact Information" := DataSource."Contact Information";
-            Customer."Shipping Instructions" := DataSource."Shipping Instructions";
-            Customer."Payment Terms Detail" := DataSource."Payment Terms Detail";
-            Customer."Internal Comments" := DataSource."Internal Comments";
-            Customer."Compliance Notes" := DataSource."Compliance Notes";
             Customer.Status := Customer.Status::New;
             Customer.Insert();
         until DataSource.Next() = 0;
