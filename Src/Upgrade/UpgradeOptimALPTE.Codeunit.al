@@ -31,43 +31,45 @@ codeunit 74391 "Upgrade OptimAL PTE"
 
     local procedure MigrateCustomerData()
     var
+        DataTransfer: DataTransfer;
         Customer: Record "Performance Test Customer";
         Archive: Record "Perf. Test Customer Archive";
     begin
-        // Archiving customer data during upgrade
-        // Only load the fields we actually copy - ignore the large text fields
-        Customer.SetLoadFields("No.", Name, Address, City, "Phone No.");
-        if not Customer.FindSet() then
-            exit;
+        Archive.Truncate(); // Clear target table before migration
 
-        Archive.DeleteAll(); // Clear target table before migration
+        // Set up bulk transfer from Customer to Archive
+        DataTransfer.SetTables(Database::"Performance Test Customer", Database::"Perf. Test Customer Archive");
 
-        repeat
-            Archive.Init();
-            Archive."No." := Customer."No."; // Direct copy - no transformation
-            Archive.Name := Customer.Name;
-            Archive.Address := Customer.Address;
-            Archive.City := Customer.City;
-            Archive."Phone No." := Customer."Phone No.";
-            Archive.Status := Archive.Status::New;
-            Archive.Insert();
-        until Customer.Next() = 0;
+        // Map fields from source to destination
+        DataTransfer.AddFieldValue(Customer.FieldNo("No."), Archive.FieldNo("No."));
+        DataTransfer.AddFieldValue(Customer.FieldNo(Name), Archive.FieldNo(Name));
+        DataTransfer.AddFieldValue(Customer.FieldNo(Address), Archive.FieldNo(Address));
+        DataTransfer.AddFieldValue(Customer.FieldNo(City), Archive.FieldNo(City));
+        DataTransfer.AddFieldValue(Customer.FieldNo("Phone No."), Archive.FieldNo("Phone No."));
+
+        // Set constant value for Status
+        DataTransfer.AddConstantValue(Archive.Status::New, Archive.FieldNo(Status));
+
+        // Execute bulk copy - ONE OPERATION FOR ALL RECORDS!
+        DataTransfer.CopyRows();
     end;
 
     local procedure UpdateCustomerStatus()
     var
+        DataTransfer: DataTransfer;
         Archive: Record "Perf. Test Customer Archive";
     begin
-        // Updating field values after migration
-        Archive.SetLoadFields(Status);
-        Archive.SetFilter("No.", 'CUST-*');
-        if not Archive.FindSet(true) then
-            exit;
+        // Set up bulk update on same table
+        DataTransfer.SetTables(Database::"Perf. Test Customer Archive", Database::"Perf. Test Customer Archive");
 
-        repeat
-            Archive.Status := Archive.Status::Active;
-            Archive.Modify();
-        until Archive.Next() = 0;
+        // Add filter to match only records we want to update
+        DataTransfer.AddSourceFilter(Archive.FieldNo("No."), 'CUST-*');
+
+        // Set constant value for Status field
+        DataTransfer.AddConstantValue(Archive.Status::Active, Archive.FieldNo(Status));
+
+        // Execute bulk update - ONE OPERATION FOR ALL RECORDS!
+        DataTransfer.CopyFields();
     end;
 
 }

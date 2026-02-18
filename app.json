@@ -2,7 +2,7 @@
     "id": "78476316-9214-45ea-96f4-6b752f033b99",
     "name": "OptimAL.PTE",
     "publisher": "waldo",
-    "version": "1.0.0.2",
+    "version": "1.0.0.8",
     "brief": "Performance Test Extension for OptimAL Escape Room",
     "description": "Contains unoptimized code demonstrating BC performance problems",
     "privacyStatement": "",
@@ -27,7 +27,7 @@
             "to": 74399
         }
     ],
-    "runtime": "15.0",
+    "runtime": "16.0",
     "features": [
         "NoImplicitWith"
     ],
