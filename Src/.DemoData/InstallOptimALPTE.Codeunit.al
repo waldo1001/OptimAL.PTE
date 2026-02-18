@@ -18,7 +18,7 @@ codeunit 74390 "Install OptimAL PTE"
 
     local procedure ScheduleBackgroundDataGeneration()
     var
-        DataSource: Record "Performance Test Data Source";
+        Customer: Record "Performance Test Customer";
         JobQueueEntry: Record "Job Queue Entry";
         TotalRecords: Integer;
         BatchSize: Integer;
@@ -30,7 +30,7 @@ codeunit 74390 "Install OptimAL PTE"
         TotalRecords := 25000;
 
         // Skip if data already exists
-        if DataSource.Count() >= TotalRecords then
+        if Customer.Count() >= TotalRecords then
             exit;
 
         BatchCount := 10; // 10 parallel job queue entries

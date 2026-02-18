@@ -1,7 +1,7 @@
-table 74302 "Performance Test Data Source"
+table 74302 "Perf. Test Customer Archive"
 {
     DataClassification = CustomerContent;
-    Caption = 'Performance Test Data Source';
+    Caption = 'Performance Test Customer Archive';
 
     fields
     {

@@ -31,43 +31,43 @@ codeunit 74391 "Upgrade OptimAL PTE"
 
     local procedure MigrateCustomerData()
     var
-        DataSource: Record "Performance Test Data Source";
         Customer: Record "Performance Test Customer";
+        Archive: Record "Perf. Test Customer Archive";
     begin
-        // Migrating from legacy system during upgrade
+        // Archiving customer data during upgrade
         // Only load the fields we actually copy - ignore the large text fields
-        DataSource.SetLoadFields("No.", Name, Address, City, "Phone No.");
-        if not DataSource.FindSet() then
+        Customer.SetLoadFields("No.", Name, Address, City, "Phone No.");
+        if not Customer.FindSet() then
             exit;
 
-        Customer.DeleteAll(); // Clear target table before migration
+        Archive.DeleteAll(); // Clear target table before migration
 
         repeat
-            Customer.Init();
-            Customer."No." := DataSource."No."; // Direct copy - no transformation
-            Customer.Name := DataSource.Name;
-            Customer.Address := DataSource.Address;
-            Customer.City := DataSource.City;
-            Customer."Phone No." := DataSource."Phone No.";
-            Customer.Status := Customer.Status::New;
-            Customer.Insert();
-        until DataSource.Next() = 0;
+            Archive.Init();
+            Archive."No." := Customer."No."; // Direct copy - no transformation
+            Archive.Name := Customer.Name;
+            Archive.Address := Customer.Address;
+            Archive.City := Customer.City;
+            Archive."Phone No." := Customer."Phone No.";
+            Archive.Status := Archive.Status::New;
+            Archive.Insert();
+        until Customer.Next() = 0;
     end;
 
     local procedure UpdateCustomerStatus()
     var
-        Customer: Record "Performance Test Customer";
+        Archive: Record "Perf. Test Customer Archive";
     begin
         // Updating field values after migration
-        Customer.SetLoadFields(Status);
-        Customer.SetFilter("No.", 'CUST-*');
-        if not Customer.FindSet(true) then
+        Archive.SetLoadFields(Status);
+        Archive.SetFilter("No.", 'CUST-*');
+        if not Archive.FindSet(true) then
             exit;
 
         repeat
-            Customer.Status := Customer.Status::Active;
-            Customer.Modify();
-        until Customer.Next() = 0;
+            Archive.Status := Archive.Status::Active;
+            Archive.Modify();
+        until Archive.Next() = 0;
     end;
 
 }

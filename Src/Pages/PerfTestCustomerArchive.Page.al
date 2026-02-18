@@ -1,10 +1,10 @@
-page 74304 "Performance Test Data Sources"
+page 74304 "Perf. Test Customer Archive"
 {
     PageType = List;
     ApplicationArea = All;
     UsageCategory = Lists;
-    SourceTable = "Performance Test Data Source";
-    Caption = 'Performance Test Data Sources';
+    SourceTable = "Perf. Test Customer Archive";
+    Caption = 'Performance Test Customer Archive';
 
     layout
     {
