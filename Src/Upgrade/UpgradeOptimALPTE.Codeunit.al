@@ -69,4 +69,5 @@ codeunit 74391 "Upgrade OptimAL PTE"
             Customer.Modify();
         until Customer.Next() = 0;
     end;
+
 }
