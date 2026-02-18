@@ -33,7 +33,6 @@ table 74300 "Performance Test Customer"
         field(6; "Total Sales"; Decimal)
         {
             Caption = 'Total Sales';
-            // Intentionally NO SIFT key for Room 5
             FieldClass = FlowField;
             CalcFormula = Sum("Performance Test Order".Amount where("Customer No." = field("No.")));
             Editable = false;
@@ -41,7 +40,6 @@ table 74300 "Performance Test Customer"
         field(7; "Order Count"; Integer)
         {
             Caption = 'Order Count';
-            // Intentionally NO SIFT key for Room 5
             FieldClass = FlowField;
             CalcFormula = Count("Performance Test Order" where("Customer No." = field("No.")));
             Editable = false;
@@ -99,6 +97,5 @@ table 74300 "Performance Test Customer"
         {
             Clustered = true;
         }
-        // Intentionally missing SIFT keys - participants will add them in Room 5
     }
 }

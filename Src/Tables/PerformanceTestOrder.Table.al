@@ -46,7 +46,7 @@ table 74301 "Performance Test Order"
         }
         key(CustomerKey; "Customer No.")
         {
-            // Intentionally NOT a SIFT key - participants will fix in Room 5
+            // Key for customer relationship queries
         }
     }
 }

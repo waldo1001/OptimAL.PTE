@@ -27,10 +27,10 @@ page 74300 "OptimAL Business Operations"
             {
                 Caption = 'Test Data Statistics';
 
-                field(DataSourceCount; DataSourceCount)
+                field(ArchiveCount; ArchiveCount)
                 {
-                    Caption = 'Data Source Records';
-                    ToolTip = 'Number of records in the Performance Test Data Source table';
+                    Caption = 'Archive Records';
+                    ToolTip = 'Number of records in the Performance Test Customer Archive table';
                     Editable = false;
                     StyleExpr = true;
                 }
@@ -260,7 +260,7 @@ page 74300 "OptimAL Business Operations"
 
                     trigger OnAction()
                     var
-                        DataSource: Record "Performance Test Data Source";
+                        Customer: Record "Performance Test Customer";
                         JobQueueEntry: Record "Job Queue Entry";
                         CurrentCount: Integer;
                         TargetCount: Integer;
@@ -271,11 +271,11 @@ page 74300 "OptimAL Business Operations"
                         EndNo: Integer;
                         i: Integer;
                         ConfirmQst: Label 'This will generate %1 additional records in background batches to reach 25,000 total.\\Continue?';
-                        AlreadyEnoughMsg: Label 'You already have %1 Data Source records, which exceeds the 25,000 minimum. No action needed.';
+                        AlreadyEnoughMsg: Label 'You already have %1 Customer records, which exceeds the 25,000 minimum. No action needed.';
                         SuccessMsg: Label 'Created %1 background jobs to generate %2 records. This will take a few minutes. Refresh the page to see updated counts.';
                     begin
                         TargetCount := 25000;
-                        CurrentCount := DataSource.Count();
+                        CurrentCount := Customer.Count();
 
                         // Check if already have enough
                         if CurrentCount >= TargetCount then begin
@@ -314,22 +314,22 @@ page 74300 "OptimAL Business Operations"
                 action(DeleteAllTestData)
                 {
                     Caption = 'Delete All Test Data';
-                    ToolTip = 'Delete all performance test data (Data Sources, Customers, Orders). Use this to reset before reinstalling the app.';
+                    ToolTip = 'Delete all performance test data (Customers, Archives, Orders). Use this to reset before reinstalling the app.';
                     Image = Delete;
 
                     trigger OnAction()
                     var
-                        DataSource: Record "Performance Test Data Source";
+                        Archive: Record "Perf. Test Customer Archive";
                         Customer: Record "Performance Test Customer";
                         Order: Record "Performance Test Order";
-                        ConfirmQst: Label 'This will delete ALL test data:\- %1 Data Sources\- %2 Customers\- %3 Orders\\Continue?';
+                        ConfirmQst: Label 'This will delete ALL test data:\- %1 Customers\- %2 Archives\- %3 Orders\\Continue?';
                     begin
-                        if not Confirm(ConfirmQst, false, DataSource.Count(), Customer.Count(), Order.Count()) then
+                        if not Confirm(ConfirmQst, false, Customer.Count(), Archive.Count(), Order.Count()) then
                             exit;
 
                         Order.DeleteAll();
                         Customer.DeleteAll();
-                        DataSource.DeleteAll();
+                        Archive.DeleteAll();
 
                         CalculateRecordCounts();
                         Message('All test data deleted successfully.');
@@ -364,17 +364,17 @@ page 74300 "OptimAL Business Operations"
                     end;
                 }
 
-                action(ViewDataSources)
+                action(ViewArchive)
                 {
-                    Caption = 'View Data Sources';
-                    ToolTip = 'Open the list of performance test data sources';
+                    Caption = 'View Customer Archive';
+                    ToolTip = 'Open the list of performance test customer archive records';
                     Image = DataEntry;
 
                     trigger OnAction()
                     var
-                        PerfTestDataSources: Page "Performance Test Data Sources";
+                        ArchivePage: Page "Perf. Test Customer Archive";
                     begin
-                        PerfTestDataSources.Run();
+                        ArchivePage.Run();
                     end;
                 }
             }
@@ -398,18 +398,18 @@ page 74300 "OptimAL Business Operations"
 
     local procedure CalculateRecordCounts()
     var
-        DataSource: Record "Performance Test Data Source";
+        Archive: Record "Perf. Test Customer Archive";
         Customer: Record "Performance Test Customer";
         Order: Record "Performance Test Order";
     begin
-        DataSourceCount := DataSource.Count();
+        ArchiveCount := Archive.Count();
         CustomerCount := Customer.Count();
         OrderCount := Order.Count();
     end;
 
     var
         InstructionsHtml: Text;
-        DataSourceCount: Integer;
+        ArchiveCount: Integer;
         CustomerCount: Integer;
         OrderCount: Integer;
 }
