@@ -13,7 +13,8 @@ codeunit 74345 "Customer Order Validator"
         Order: Record "Performance Test Order";
         Counter: Integer;
     begin
-        Customer.FindSet(true); // BUG: acquires UpdLocks for a read-only operation
+        Customer.ReadIsolation := IsolationLevel::ReadUncommitted;
+        Customer.FindSet();
         repeat
             Order.SetRange("Customer No.", Customer."No.");
             if Order.IsEmpty() then
