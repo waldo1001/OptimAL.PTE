@@ -16,6 +16,7 @@ codeunit 74340 "Batch Order Processor"
         repeat
             Customer.Status := Customer.Status::Completed;
             Customer.Modify();
+
             Sleep(5);
             Counter += 1;
             if Counter mod 100 = 0 then
