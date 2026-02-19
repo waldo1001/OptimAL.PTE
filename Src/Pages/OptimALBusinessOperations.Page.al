@@ -192,7 +192,7 @@ page 74300 "OptimAL Business Operations"
                 action(CustomerOrderStats)
                 {
                     Caption = 'Customer Order Analytics';
-                    ToolTip = 'Analyze which customers have active orders';
+                    ToolTip = 'Build an order report with customer details';
                     Image = Statistics;
 
                     trigger OnAction()
@@ -204,32 +204,10 @@ page 74300 "OptimAL Business Operations"
                     begin
                         // DO NOT REMOVE: Performance measurement is crucial for escape room validation
                         MeasurementId := PerfMgr.StartMeasurement('R7-N+1', 7, 1, 'Customer Order Analytics');
-                        Count := Analytics.GetCustomersWithOrders();
+                        Count := Analytics.BuildOrderReport();
                         PerfMgr.StopMeasurement(MeasurementId);
                         // END DO NOT REMOVE
-                        Message('Customers with orders: %1', Count);
-                    end;
-                }
-
-                action(OrderStatistics)
-                {
-                    Caption = 'Order Statistics Report';
-                    ToolTip = 'Generate detailed order statistics';
-                    Image = OrderList;
-
-                    trigger OnAction()
-                    var
-                        PerfMgr: Codeunit "Performance Measurement Mgr";
-                        Stats: Codeunit "Order Statistics Report";
-                        MeasurementId: Guid;
-                        Total: Integer;
-                    begin
-                        // DO NOT REMOVE: Performance measurement is crucial for escape room validation
-                        MeasurementId := PerfMgr.StartMeasurement('R7-NESTED', 7, 2, 'Order Statistics Report');
-                        Total := Stats.CalculateTotalOrderCount();
-                        PerfMgr.StopMeasurement(MeasurementId);
-                        // END DO NOT REMOVE
-                        Message('Total Orders: %1', Total);
+                        Message('Order report complete: %1 orders processed', Count);
                     end;
                 }
             }
