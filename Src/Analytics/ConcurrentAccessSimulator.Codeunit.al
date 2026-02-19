@@ -30,6 +30,9 @@ codeunit 74346 "Concurrent Access Simulator"
         BlockingThresholdMs := 3000;
         FixedThresholdMs := 1000;
 
+        // Reset data so every run starts from a known state
+        ResetTestData();
+
         // --- Test 1: Commit lesson ---
         MeasurementId := PerfMgr.StartMeasurement('R6-CONCURRENT', 6, 0, 'Concurrent Access Test');
         CommitBlockMs := RunCommitTest();
@@ -111,6 +114,17 @@ codeunit 74346 "Concurrent Access Simulator"
         Validator: Codeunit "Customer Order Validator";
     begin
         IssueCount := Validator.ValidateOrderData();
+    end;
+
+    local procedure ResetTestData()
+    var
+        Customer: Record "Performance Test Customer";
+    begin
+        // Reset all customers to New so every test run starts from a known state.
+        // Without this, a previous batch run sets all records to Completed, and the
+        // credit approval finds nothing to approve - making Test 1 look fixed when it isn't.
+        Customer.ModifyAll(Status, Customer.Status::New);
+        Commit();
     end;
 
     local procedure BuildResultMessage(CommitBlockMs: Integer; ReadUncommittedBlockMs: Integer; ReadUncommittedFixed: Boolean): Text
