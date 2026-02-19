@@ -50,30 +50,36 @@ codeunit 74346 "Concurrent Access Simulator"
     var
         BackgroundSessionId: Integer;
         StartTime: DateTime;
-        CreditApproval: Codeunit "Customer Credit Approval";
         PerfMgr: Codeunit "Performance Measurement Mgr";
         MeasurementId: Guid;
+        CreditApprovalSucceeded: Boolean;
     begin
-        // Start Batch Order Processor in background - it will hold X-locks per record with no Commit
+        // Start Batch Order Processor in background - it holds X-locks with no Commit
         StartSession(BackgroundSessionId, Codeunit::"Batch Order Processor");
+        Sleep(1500); // Let background acquire locks
 
-        // Wait for background to acquire its first locks
-        Sleep(1500);
-
-        // Try credit approval in foreground - should be blocked by batch's X-locks
+        // Try credit approval - without Commit() in the batch, this will block until lock timeout
         StartTime := CurrentDateTime();
         MeasurementId := PerfMgr.StartMeasurement('R6-CONCURRENT-COMMIT', 6, 1, 'Credit Approval vs Batch');
-        CreditApproval.ApproveCreditForNextCustomer();
+        CreditApprovalSucceeded := TryApproveCreditForNextCustomer();
         PerfMgr.StopMeasurement(MeasurementId);
         BlockedMs := CurrentDateTime() - StartTime;
 
-        // Write fixed measurement if credit approval was fast (Commit() added to batch)
-        if BlockedMs < FixedThresholdMs then begin
+        StopSession(BackgroundSessionId);
+
+        // With Commit() added to the batch, credit approval succeeds quickly
+        if CreditApprovalSucceeded and (BlockedMs < FixedThresholdMs) then begin
             MeasurementId := PerfMgr.StartMeasurement('R6-COMMIT-FIXED', 6, 1, 'Commit Fix Verified');
             PerfMgr.StopMeasurement(MeasurementId);
         end;
+    end;
 
-        StopSession(BackgroundSessionId);
+    [TryFunction]
+    local procedure TryApproveCreditForNextCustomer()
+    var
+        CreditApproval: Codeunit "Customer Credit Approval";
+    begin
+        CreditApproval.ApproveCreditForNextCustomer();
     end;
 
     local procedure RunReadUncommittedTest(var ValidatorFixed: Boolean) BlockedMs: Integer

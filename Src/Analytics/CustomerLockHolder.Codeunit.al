@@ -14,6 +14,6 @@ codeunit 74348 "Customer Lock Holder"
         Customer: Record "Performance Test Customer";
     begin
         Customer.FindSet(true);
-        Sleep(20000); // Hold locks long enough for the foreground test to run
+        Sleep(300000); // Hold locks indefinitely - StopSession will kill this when test completes
     end;
 }
