@@ -10,14 +10,13 @@ codeunit 74340 "Batch Order Processor"
     procedure ProcessPendingOrders()
     var
         Customer: Record "Performance Test Customer";
-        Counter: Integer;
     begin
         Customer.FindSet(true);
         repeat
             Customer.Status := Customer.Status::Completed;
             Customer.Modify();
-            Sleep(5);
-            Counter += 1;
+
+            Sleep(5); // Simulate some processing time per record to increase likelihood of lock contention
         until Customer.Next() = 0;
     end;
 
