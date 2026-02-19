@@ -18,8 +18,6 @@ codeunit 74340 "Batch Order Processor"
             Customer.Modify();
             Sleep(5);
             Counter += 1;
-            if Counter mod 100 = 0 then
-                Commit(); // Release locks every 100 records
         until Customer.Next() = 0;
     end;
 
