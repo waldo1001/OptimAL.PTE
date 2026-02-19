@@ -13,7 +13,6 @@ codeunit 74330 "Customer Credit Approval"
     var
         Customer: Record "Performance Test Customer";
     begin
-        Customer.SetRange(Status, Customer.Status::New);
         if not Customer.FindFirst() then
             exit(false);
 
