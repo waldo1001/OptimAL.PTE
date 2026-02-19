@@ -18,12 +18,16 @@ codeunit 74346 "Concurrent Access Simulator"
         BlockingThresholdMs: Integer;        // ms - above this = "blocked"
         FixedThresholdMs: Integer;           // ms - below this = "fixed"
 
+    trigger OnRun()
+    begin
+        RunSimulation();
+    end;
+
     procedure RunSimulation()
     var
         CommitBlockMs: Integer;
         ReadUncommittedBlockMs: Integer;
         ReadUncommittedFixed: Boolean;
-        ResultMsg: Text;
         PerfMgr: Codeunit "Performance Measurement Mgr";
         MeasurementId: Guid;
     begin
@@ -40,10 +44,6 @@ codeunit 74346 "Concurrent Access Simulator"
 
         // --- Test 2: ReadUncommitted lesson ---
         ReadUncommittedBlockMs := RunReadUncommittedTest(ReadUncommittedFixed);
-
-        // Build result message
-        ResultMsg := BuildResultMessage(CommitBlockMs, ReadUncommittedBlockMs, ReadUncommittedFixed);
-        Message(ResultMsg);
     end;
 
     local procedure RunCommitTest() BlockedMs: Integer
@@ -127,21 +127,42 @@ codeunit 74346 "Concurrent Access Simulator"
         Commit();
     end;
 
-    local procedure BuildResultMessage(CommitBlockMs: Integer; ReadUncommittedBlockMs: Integer; ReadUncommittedFixed: Boolean): Text
+    procedure ShowSimulationResults()
     var
+        PerfMgr: Codeunit "Performance Measurement Mgr";
+        CommitMeasurement: Record "Performance Measurement";
+        ReadUncommittedMeasurement: Record "Performance Measurement";
+        CommitFixed: Boolean;
+        ReadUncommittedFixed: Boolean;
+        CommitBlockMs: Integer;
+        ReadUncommittedBlockMs: Integer;
         ResultLbl: Label 'Concurrent Access Simulation Results\\\Test 1 - Batch Processor vs Credit Approval:\  Credit approval blocked for: %1 ms\  %2\\Test 2 - Lock Holder vs Order Validator:\  %3\  %4\\Check Performance Measurements for details.', Comment = '%1 = commit block ms, %2 = commit result, %3 = readuncommitted time, %4 = readuncommitted result';
-        BlockedLbl: Label 'BLOCKED - The batch holds locks; add Commit() to release them periodically';
+        BlockedLbl: Label 'BLOCKED - The batch holds locks the entire time; add Commit() to release them periodically';
         CommitFixedLbl: Label 'FIXED - Commit() releases locks between intervals';
-        LockedLbl: Label 'BLOCKED - lock timeout: the subscriber left UpdLocks, the validator could not read';
+        LockedLbl: Label 'BLOCKED - lock timeout: the subscriber left UpdLocks that conflict with another session';
         ReadUncommittedFixedLbl: Label 'FIXED - validator completed: ReadIsolation bypassed the subscriber locks';
+        NoResultsLbl: Label 'No simulation results found yet.\Run "Simulate Multi-User Access" first and wait approximately 30-60 seconds for it to complete.';
         CommitResult: Text;
-        ReadUncommittedResult: Text;
         ReadUncommittedTimeText: Text;
+        ReadUncommittedResult: Text;
     begin
-        if CommitBlockMs >= BlockingThresholdMs then
-            CommitResult := BlockedLbl
+        if not PerfMgr.GetLastMeasurement('R6-CONCURRENT-COMMIT', CommitMeasurement) then begin
+            Message(NoResultsLbl);
+            exit;
+        end;
+
+        CommitBlockMs := CommitMeasurement."Duration (ms)";
+        CommitFixed := PerfMgr.MeasurementExistsAfter('R6-COMMIT-FIXED', CommitMeasurement."Start DateTime" - 60000);
+
+        if CommitFixed then
+            CommitResult := CommitFixedLbl
         else
-            CommitResult := CommitFixedLbl;
+            CommitResult := BlockedLbl;
+
+        ReadUncommittedFixed := PerfMgr.MeasurementExistsAfter('R6-READUNCOMMITTED-FIXED', CommitMeasurement."Start DateTime" - 60000);
+
+        if PerfMgr.GetLastMeasurement('R6-CONCURRENT-READUNCOMMITTED', ReadUncommittedMeasurement) then
+            ReadUncommittedBlockMs := ReadUncommittedMeasurement."Duration (ms)";
 
         if ReadUncommittedFixed then begin
             ReadUncommittedTimeText := 'Completed in ' + Format(ReadUncommittedBlockMs) + ' ms';
@@ -151,6 +172,6 @@ codeunit 74346 "Concurrent Access Simulator"
             ReadUncommittedResult := LockedLbl;
         end;
 
-        exit(StrSubstNo(ResultLbl, CommitBlockMs, CommitResult, ReadUncommittedTimeText, ReadUncommittedResult));
+        Message(StrSubstNo(ResultLbl, CommitBlockMs, CommitResult, ReadUncommittedTimeText, ReadUncommittedResult));
     end;
 }

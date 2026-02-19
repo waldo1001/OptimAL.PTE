@@ -119,9 +119,24 @@ page 74300 "OptimAL Business Operations"
 
                     trigger OnAction()
                     var
+                        SessionId: Integer;
+                        SimulationStartedMsg: Label 'Multi-user access simulation started in the background.\The simulation takes approximately 30-60 seconds to complete.\\Click "View Simulation Results" afterwards to see the outcome.';
+                    begin
+                        StartSession(SessionId, Codeunit::"Concurrent Access Simulator");
+                        Message(SimulationStartedMsg);
+                    end;
+                }
+                action(ViewSimulationResults)
+                {
+                    Caption = 'View Simulation Results';
+                    ToolTip = 'Shows the results of the last multi-user access simulation.';
+                    Image = ViewDetails;
+
+                    trigger OnAction()
+                    var
                         Simulator: Codeunit "Concurrent Access Simulator";
                     begin
-                        Simulator.RunSimulation();
+                        Simulator.ShowSimulationResults();
                     end;
                 }
             }
