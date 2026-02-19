@@ -144,23 +144,41 @@ codeunit 74346 "Concurrent Access Simulator"
         PerfMgr: Codeunit "Performance Measurement Mgr";
         CommitMeasurement: Record "Performance Measurement";
         ReadUncommittedMeasurement: Record "Performance Measurement";
+        ConcurrentMeasurement: Record "Performance Measurement";
         CommitFixed: Boolean;
         ReadUncommittedFixed: Boolean;
         CommitBlockMs: Integer;
         ReadUncommittedBlockMs: Integer;
-        ResultLbl: Label 'Concurrent Access Simulation Results\\\Test 1 - Batch Processor vs Credit Approval:\  Credit approval blocked for: %1 ms\  %2\\Test 2 - Lock Holder vs Order Validator:\  %3\  %4\\Check Performance Measurements for details.', Comment = '%1 = commit block ms, %2 = commit result, %3 = readuncommitted time, %4 = readuncommitted result';
+        ResultLbl: Label 'Concurrent Access Simulation Results\\\STATUS: %5\\\Test 1 - Batch Processor vs Credit Approval:\  Credit approval blocked for: %1 ms\  %2\\Test 2 - Lock Holder vs Order Validator:\  %3\  %4\\Check Performance Measurements for details.', Comment = '%1 = commit block ms, %2 = commit result, %3 = readuncommitted time, %4 = readuncommitted result, %5 = status';
         BlockedLbl: Label 'BLOCKED - The batch holds locks the entire time; add Commit() to release them periodically';
         CommitFixedLbl: Label 'FIXED - Commit() releases locks between intervals';
         LockedLbl: Label 'BLOCKED - lock timeout: the subscriber left UpdLocks that conflict with another session';
         ReadUncommittedFixedLbl: Label 'FIXED - validator completed: ReadIsolation bypassed the subscriber locks';
         NoResultsLbl: Label 'No simulation results found yet.\Run "Simulate Multi-User Access" first and wait approximately 30-60 seconds for it to complete.';
+        InProgressLbl: Label 'SIMULATION IN PROGRESS - Please wait...';
+        CompletedLbl: Label 'COMPLETED';
         CommitResult: Text;
         ReadUncommittedTimeText: Text;
         ReadUncommittedResult: Text;
+        StatusText: Text;
     begin
         if not PerfMgr.GetLastMeasurement('R6-CONCURRENT-COMMIT', CommitMeasurement) then begin
             Message(NoResultsLbl);
             exit;
+        end;
+
+        // Check if simulation is still in progress by looking at the main concurrent measurement
+        // If it has 0ms duration, it means it was started but not yet stopped
+        if PerfMgr.GetLastMeasurement('R6-CONCURRENT', ConcurrentMeasurement) then begin
+            if ConcurrentMeasurement."Duration (ms)" = 0 then begin
+                StatusText := InProgressLbl;
+            end else begin
+                StatusText := CompletedLbl;
+            end;
+        end else begin
+            // If the main measurement doesn't exist yet, but commit measurement does,
+            // it means we're in the middle of the simulation
+            StatusText := InProgressLbl;
         end;
 
         CommitBlockMs := CommitMeasurement."Duration (ms)";
@@ -184,6 +202,6 @@ codeunit 74346 "Concurrent Access Simulator"
             ReadUncommittedResult := LockedLbl;
         end;
 
-        Message(StrSubstNo(ResultLbl, CommitBlockMs, CommitResult, ReadUncommittedTimeText, ReadUncommittedResult));
+        Message(StrSubstNo(ResultLbl, CommitBlockMs, CommitResult, ReadUncommittedTimeText, ReadUncommittedResult, StatusText));
     end;
 }
