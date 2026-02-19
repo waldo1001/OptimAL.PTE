@@ -119,11 +119,17 @@ codeunit 74346 "Concurrent Access Simulator"
     local procedure ResetTestData()
     var
         Customer: Record "Performance Test Customer";
+        PerfMeasurement: Record "Performance Measurement";
     begin
         // Reset all customers to New so every test run starts from a known state.
         // Without this, a previous batch run sets all records to Completed, and the
         // credit approval finds nothing to approve - making Test 1 look fixed when it isn't.
         Customer.ModifyAll(Status, Customer.Status::New);
+
+        // Clean up old measurements from previous runs
+        PerfMeasurement.SetRange("Room No.", 6);
+        PerfMeasurement.DeleteAll();
+
         Commit();
     end;
 
