@@ -11,6 +11,6 @@ codeunit 74347 "Order Data Audit Hook"
         // Sets an update-lock hint on the record variable passed from Customer Order Validator.
         // When ValidateOrderData() calls FindSet() afterwards, it will try to acquire UpdLocks
         // on every row - blocking anyone else trying to write to those same records.
-        Customer.LockTable();
+        Customer.FindSet(true); // true = for update -> applies update locks to the record variable, which is not released until the end of the transaction in Customer Order Validator.
     end;
 }

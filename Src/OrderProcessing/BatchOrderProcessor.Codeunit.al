@@ -11,12 +11,11 @@ codeunit 74340 "Batch Order Processor"
     var
         Customer: Record "Performance Test Customer";
     begin
-        // Batch job processes large dataset
         Customer.FindSet(true);
         repeat
             Customer.Status := Customer.Status::Completed;
             Customer.Modify();
-            Sleep(50); // Simulates complex business logic per record
+            Sleep(5);
         until Customer.Next() = 0;
     end;
 

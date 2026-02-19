@@ -18,12 +18,16 @@ codeunit 74346 "Concurrent Access Simulator"
         BlockingThresholdMs: Integer;        // ms - above this = "blocked"
         FixedThresholdMs: Integer;           // ms - below this = "fixed"
 
+    trigger OnRun()
+    begin
+        RunSimulation();
+    end;
+
     procedure RunSimulation()
     var
         CommitBlockMs: Integer;
         ReadUncommittedBlockMs: Integer;
         ReadUncommittedFixed: Boolean;
-        ResultMsg: Text;
         PerfMgr: Codeunit "Performance Measurement Mgr";
         MeasurementId: Guid;
     begin
@@ -40,40 +44,42 @@ codeunit 74346 "Concurrent Access Simulator"
 
         // --- Test 2: ReadUncommitted lesson ---
         ReadUncommittedBlockMs := RunReadUncommittedTest(ReadUncommittedFixed);
-
-        // Build result message
-        ResultMsg := BuildResultMessage(CommitBlockMs, ReadUncommittedBlockMs, ReadUncommittedFixed);
-        Message(ResultMsg);
     end;
 
     local procedure RunCommitTest() BlockedMs: Integer
     var
         BackgroundSessionId: Integer;
         StartTime: DateTime;
-        CreditApproval: Codeunit "Customer Credit Approval";
         PerfMgr: Codeunit "Performance Measurement Mgr";
         MeasurementId: Guid;
+        CreditApprovalSucceeded: Boolean;
     begin
-        // Start Batch Order Processor in background - it will hold X-locks per record with no Commit
+        // Start Batch Order Processor in background - it holds X-locks with no Commit
         StartSession(BackgroundSessionId, Codeunit::"Batch Order Processor");
+        Sleep(1500); // Let background acquire locks
 
-        // Wait for background to acquire its first locks
-        Sleep(1500);
-
-        // Try credit approval in foreground - should be blocked by batch's X-locks
+        // Try credit approval - without Commit() in the batch, this will block until lock timeout
         StartTime := CurrentDateTime();
         MeasurementId := PerfMgr.StartMeasurement('R6-CONCURRENT-COMMIT', 6, 1, 'Credit Approval vs Batch');
-        CreditApproval.ApproveCreditForNextCustomer();
+        CreditApprovalSucceeded := TryApproveCreditForNextCustomer();
         PerfMgr.StopMeasurement(MeasurementId);
         BlockedMs := CurrentDateTime() - StartTime;
 
-        // Write fixed measurement if credit approval was fast (Commit() added to batch)
-        if BlockedMs < FixedThresholdMs then begin
+        StopSession(BackgroundSessionId);
+
+        // With Commit() added to the batch, credit approval succeeds quickly
+        if CreditApprovalSucceeded and (BlockedMs < FixedThresholdMs) then begin
             MeasurementId := PerfMgr.StartMeasurement('R6-COMMIT-FIXED', 6, 1, 'Commit Fix Verified');
             PerfMgr.StopMeasurement(MeasurementId);
         end;
+    end;
 
-        StopSession(BackgroundSessionId);
+    [TryFunction]
+    local procedure TryApproveCreditForNextCustomer()
+    var
+        CreditApproval: Codeunit "Customer Credit Approval";
+    begin
+        CreditApproval.ApproveCreditForNextCustomer();
     end;
 
     local procedure RunReadUncommittedTest(var ValidatorFixed: Boolean) BlockedMs: Integer
@@ -119,29 +125,56 @@ codeunit 74346 "Concurrent Access Simulator"
     local procedure ResetTestData()
     var
         Customer: Record "Performance Test Customer";
+        PerfMeasurement: Record "Performance Measurement";
     begin
         // Reset all customers to New so every test run starts from a known state.
         // Without this, a previous batch run sets all records to Completed, and the
         // credit approval finds nothing to approve - making Test 1 look fixed when it isn't.
         Customer.ModifyAll(Status, Customer.Status::New);
+
+        // Clean up old measurements from previous runs
+        PerfMeasurement.SetRange("Room No.", 6);
+        PerfMeasurement.DeleteAll();
+
         Commit();
     end;
 
-    local procedure BuildResultMessage(CommitBlockMs: Integer; ReadUncommittedBlockMs: Integer; ReadUncommittedFixed: Boolean): Text
+    procedure ShowSimulationResults()
     var
+        PerfMgr: Codeunit "Performance Measurement Mgr";
+        CommitMeasurement: Record "Performance Measurement";
+        ReadUncommittedMeasurement: Record "Performance Measurement";
+        CommitFixed: Boolean;
+        ReadUncommittedFixed: Boolean;
+        CommitBlockMs: Integer;
+        ReadUncommittedBlockMs: Integer;
         ResultLbl: Label 'Concurrent Access Simulation Results\\\Test 1 - Batch Processor vs Credit Approval:\  Credit approval blocked for: %1 ms\  %2\\Test 2 - Lock Holder vs Order Validator:\  %3\  %4\\Check Performance Measurements for details.', Comment = '%1 = commit block ms, %2 = commit result, %3 = readuncommitted time, %4 = readuncommitted result';
-        BlockedLbl: Label 'BLOCKED - The batch holds locks; add Commit() to release them periodically';
+        BlockedLbl: Label 'BLOCKED - The batch holds locks the entire time; add Commit() to release them periodically';
         CommitFixedLbl: Label 'FIXED - Commit() releases locks between intervals';
-        LockedLbl: Label 'BLOCKED - lock timeout: the subscriber left UpdLocks, the validator could not read';
+        LockedLbl: Label 'BLOCKED - lock timeout: the subscriber left UpdLocks that conflict with another session';
         ReadUncommittedFixedLbl: Label 'FIXED - validator completed: ReadIsolation bypassed the subscriber locks';
+        NoResultsLbl: Label 'No simulation results found yet.\Run "Simulate Multi-User Access" first and wait approximately 30-60 seconds for it to complete.';
         CommitResult: Text;
-        ReadUncommittedResult: Text;
         ReadUncommittedTimeText: Text;
+        ReadUncommittedResult: Text;
     begin
-        if CommitBlockMs >= BlockingThresholdMs then
-            CommitResult := BlockedLbl
+        if not PerfMgr.GetLastMeasurement('R6-CONCURRENT-COMMIT', CommitMeasurement) then begin
+            Message(NoResultsLbl);
+            exit;
+        end;
+
+        CommitBlockMs := CommitMeasurement."Duration (ms)";
+        CommitFixed := PerfMgr.MeasurementExistsAfter('R6-COMMIT-FIXED', CommitMeasurement."Start DateTime" - 60000);
+
+        if CommitFixed then
+            CommitResult := CommitFixedLbl
         else
-            CommitResult := CommitFixedLbl;
+            CommitResult := BlockedLbl;
+
+        ReadUncommittedFixed := PerfMgr.MeasurementExistsAfter('R6-READUNCOMMITTED-FIXED', CommitMeasurement."Start DateTime" - 60000);
+
+        if PerfMgr.GetLastMeasurement('R6-CONCURRENT-READUNCOMMITTED', ReadUncommittedMeasurement) then
+            ReadUncommittedBlockMs := ReadUncommittedMeasurement."Duration (ms)";
 
         if ReadUncommittedFixed then begin
             ReadUncommittedTimeText := 'Completed in ' + Format(ReadUncommittedBlockMs) + ' ms';
@@ -151,6 +184,6 @@ codeunit 74346 "Concurrent Access Simulator"
             ReadUncommittedResult := LockedLbl;
         end;
 
-        exit(StrSubstNo(ResultLbl, CommitBlockMs, CommitResult, ReadUncommittedTimeText, ReadUncommittedResult));
+        Message(StrSubstNo(ResultLbl, CommitBlockMs, CommitResult, ReadUncommittedTimeText, ReadUncommittedResult));
     end;
 }
