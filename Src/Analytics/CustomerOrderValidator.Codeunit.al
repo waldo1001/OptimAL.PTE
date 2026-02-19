@@ -20,7 +20,6 @@ codeunit 74345 "Customer Order Validator"
             Order.SetRange("Customer No.", Customer."No.");
             if Order.IsEmpty() then
                 IssueCount += 1;
-            Sleep(10);
         until Customer.Next() = 0;
     end;
 
