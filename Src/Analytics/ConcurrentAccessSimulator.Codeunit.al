@@ -8,11 +8,11 @@ codeunit 74346 "Concurrent Access Simulator"
     //   Fix: Add Commit() every N records in ProcessPendingOrders()
     //
     // Test 2 - ReadUncommitted lesson:
-    //   Background: Batch Order Processor (holds X-locks per record, no Commit)
+    //   Background: Customer Lock Holder (holds U-locks on all Customer rows for 20 seconds)
     //   Foreground: Customer Order Validator
-    //     - A subscriber calls LockTable() on the Customer var via the OnBefore event
-    //     - FindSet() then tries UpdLocks -> blocked by batch X-locks
-    //   Fix: Set ReadIsolation(ReadUncommitted) in ValidateOrderData() after the event
+    //     - AuditHook calls LockTable() on the Customer var via OnBeforeValidateOrderData
+    //     - FindSet() then tries U-locks -> conflicts with Lock Holder's U-locks -> lock timeout
+    //   Fix: Set ReadIsolation(ReadUncommitted) in ValidateOrderData() after the event call
 
     var
         BlockingThresholdMs: Integer;        // ms - above this = "blocked"
@@ -22,6 +22,7 @@ codeunit 74346 "Concurrent Access Simulator"
     var
         CommitBlockMs: Integer;
         ReadUncommittedBlockMs: Integer;
+        ReadUncommittedFixed: Boolean;
         ResultMsg: Text;
         PerfMgr: Codeunit "Performance Measurement Mgr";
         MeasurementId: Guid;
@@ -35,10 +36,10 @@ codeunit 74346 "Concurrent Access Simulator"
         PerfMgr.StopMeasurement(MeasurementId);
 
         // --- Test 2: ReadUncommitted lesson ---
-        ReadUncommittedBlockMs := RunReadUncommittedTest();
+        ReadUncommittedBlockMs := RunReadUncommittedTest(ReadUncommittedFixed);
 
         // Build result message
-        ResultMsg := BuildResultMessage(CommitBlockMs, ReadUncommittedBlockMs);
+        ResultMsg := BuildResultMessage(CommitBlockMs, ReadUncommittedBlockMs, ReadUncommittedFixed);
         Message(ResultMsg);
     end;
 
@@ -72,33 +73,31 @@ codeunit 74346 "Concurrent Access Simulator"
         StopSession(BackgroundSessionId);
     end;
 
-    local procedure RunReadUncommittedTest() BlockedMs: Integer
+    local procedure RunReadUncommittedTest(var ValidatorFixed: Boolean) BlockedMs: Integer
     var
         BackgroundSessionId: Integer;
         StartTime: DateTime;
-        Validator: Codeunit "Customer Order Validator";
         PerfMgr: Codeunit "Performance Measurement Mgr";
         MeasurementId: Guid;
         IssueCount: Integer;
     begin
-        // Start Batch Order Processor in background - it will hold X-locks per record with no Commit
-        StartSession(BackgroundSessionId, Codeunit::"Batch Order Processor");
+        // Start lock holder in background - holds U-locks on all Customer rows
+        StartSession(BackgroundSessionId, Codeunit::"Customer Lock Holder");
 
-        // Wait for background to acquire its first locks
+        // Wait for background to acquire its locks
         Sleep(1500);
 
-        // Run Customer Order Validator in foreground:
-        // - Subscriber sets LockTable() on the Customer var via the OnBefore event
-        // - FindSet() then tries UpdLocks -> blocked by batch X-locks
-        // - With ReadIsolation(ReadUncommitted) set after the event, FindSet bypasses all locks
+        // Run validator in foreground:
+        // Without fix: AuditHook sets LockTable() hint -> FindSet() tries U-locks
+        //              -> conflicts with Lock Holder's U-locks -> lock timeout
+        // With fix:    ReadIsolation(ReadUncommitted) overrides the hint -> reads freely
         StartTime := CurrentDateTime();
-        MeasurementId := PerfMgr.StartMeasurement('R6-CONCURRENT-READUNCOMMITTED', 6, 2, 'Validator vs Batch');
-        IssueCount := Validator.ValidateOrderData();
+        MeasurementId := PerfMgr.StartMeasurement('R6-CONCURRENT-READUNCOMMITTED', 6, 2, 'Validator vs Lock Holder');
+        ValidatorFixed := TryRunValidator(IssueCount);
         PerfMgr.StopMeasurement(MeasurementId);
         BlockedMs := CurrentDateTime() - StartTime;
 
-        // Write fixed measurement if validator completed quickly despite batch holding X-locks
-        if BlockedMs < FixedThresholdMs then begin
+        if ValidatorFixed then begin
             MeasurementId := PerfMgr.StartMeasurement('R6-READUNCOMMITTED-FIXED', 6, 2, 'ReadUncommitted Fix Verified');
             PerfMgr.StopMeasurement(MeasurementId);
         end;
@@ -106,26 +105,38 @@ codeunit 74346 "Concurrent Access Simulator"
         StopSession(BackgroundSessionId);
     end;
 
-    local procedure BuildResultMessage(CommitBlockMs: Integer; ReadUncommittedBlockMs: Integer): Text
+    [TryFunction]
+    local procedure TryRunValidator(var IssueCount: Integer)
     var
-        ResultLbl: Label 'Concurrent Access Simulation Results\\\Test 1 - Batch Processor vs Credit Approval:\  Credit approval blocked for: %1 ms\  %2\\Test 2 - Batch Processor vs Order Validator:\  Order validator blocked for: %3 ms\  %4\\Check Performance Measurements for details.', Comment = '%1 = commit block ms, %2 = commit result, %3 = readuncommitted block ms, %4 = readuncommitted result';
+        Validator: Codeunit "Customer Order Validator";
+    begin
+        IssueCount := Validator.ValidateOrderData();
+    end;
+
+    local procedure BuildResultMessage(CommitBlockMs: Integer; ReadUncommittedBlockMs: Integer; ReadUncommittedFixed: Boolean): Text
+    var
+        ResultLbl: Label 'Concurrent Access Simulation Results\\\Test 1 - Batch Processor vs Credit Approval:\  Credit approval blocked for: %1 ms\  %2\\Test 2 - Lock Holder vs Order Validator:\  %3\  %4\\Check Performance Measurements for details.', Comment = '%1 = commit block ms, %2 = commit result, %3 = readuncommitted time, %4 = readuncommitted result';
         BlockedLbl: Label 'BLOCKED - The batch holds locks; add Commit() to release them periodically';
         CommitFixedLbl: Label 'FIXED - Commit() releases locks between intervals';
-        LockedLbl: Label 'BLOCKED - A subscriber left UpdLocks; the validator cannot read past them';
-        ReadUncommittedFixedLbl: Label 'FIXED - ReadIsolation allows the validator to read past existing locks';
+        LockedLbl: Label 'BLOCKED - lock timeout: the subscriber left UpdLocks, the validator could not read';
+        ReadUncommittedFixedLbl: Label 'FIXED - validator completed: ReadIsolation bypassed the subscriber locks';
         CommitResult: Text;
         ReadUncommittedResult: Text;
+        ReadUncommittedTimeText: Text;
     begin
         if CommitBlockMs >= BlockingThresholdMs then
             CommitResult := BlockedLbl
         else
             CommitResult := CommitFixedLbl;
 
-        if ReadUncommittedBlockMs >= BlockingThresholdMs then
-            ReadUncommittedResult := LockedLbl
-        else
+        if ReadUncommittedFixed then begin
+            ReadUncommittedTimeText := 'Completed in ' + Format(ReadUncommittedBlockMs) + ' ms';
             ReadUncommittedResult := ReadUncommittedFixedLbl;
+        end else begin
+            ReadUncommittedTimeText := 'Lock timeout after ' + Format(ReadUncommittedBlockMs) + ' ms';
+            ReadUncommittedResult := LockedLbl;
+        end;
 
-        exit(StrSubstNo(ResultLbl, CommitBlockMs, CommitResult, ReadUncommittedBlockMs, ReadUncommittedResult));
+        exit(StrSubstNo(ResultLbl, CommitBlockMs, CommitResult, ReadUncommittedTimeText, ReadUncommittedResult));
     end;
 }
