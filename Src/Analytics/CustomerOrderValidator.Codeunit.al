@@ -1,8 +1,6 @@
 codeunit 74345 "Customer Order Validator"
 {
-    // Business scenario: Validate order data consistency
-    // PROBLEM: Uses LockTable() for "consistent reads" but this is a read-only process.
-    // The LockTable() causes UpdLocks on every record read, blocking all writers.
+    // Business scenario: Read-only validation of order data consistency.
 
     trigger OnRun()
     begin
@@ -14,16 +12,20 @@ codeunit 74345 "Customer Order Validator"
         Customer: Record "Performance Test Customer";
         Order: Record "Performance Test Order";
     begin
-        // "Ensure consistent data during validation" - sounds reasonable, but this is read-only!
-        Customer.LockTable();
-        Order.LockTable();
+        OnBeforeValidateOrderData(Customer); // A subscriber reads and writes the Customer table here,
+                                             // unintentionally leaving locks on records we are about to read.
 
         Customer.FindSet();
         repeat
             Order.SetRange("Customer No.", Customer."No.");
             if Order.IsEmpty() then
-                IssueCount += 1; // Customer with no orders
-            Sleep(10); // Simulates complex validation logic per record
+                IssueCount += 1;
+            Sleep(10);
         until Customer.Next() = 0;
+    end;
+
+    [IntegrationEvent(false, false)]
+    local procedure OnBeforeValidateOrderData(var Customer: Record "Performance Test Customer")
+    begin
     end;
 }
