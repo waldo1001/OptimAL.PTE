@@ -105,26 +105,23 @@ page 74300 "OptimAL Business Operations"
                         Message('Found %1 active customers.', Count);
                     end;
                 }
+            }
 
-                action(CustomerDashboard)
+            group(ConcurrencyTesting)
+            {
+                Caption = 'Concurrency Testing';
+
+                action(SimulateMultiUser)
                 {
-                    Caption = 'Customer Dashboard';
-                    ToolTip = 'Display customer activity dashboard';
-                    Image = AnalysisView;
+                    Caption = 'Simulate Multi-User Access';
+                    ToolTip = 'Runs two concurrent-access tests: batch processor vs credit approval, and order validator vs credit approval. Reports blocking duration for each.';
+                    Image = Workdays;
 
                     trigger OnAction()
                     var
-                        PerfMgr: Codeunit "Performance Measurement Mgr";
-                        Dashboard: Codeunit "Customer Dashboard";
-                        MeasurementId: Guid;
-                        Count: Integer;
+                        Simulator: Codeunit "Concurrent Access Simulator";
                     begin
-                        // DO NOT REMOVE: Performance measurement is crucial for escape room validation
-                        MeasurementId := PerfMgr.StartMeasurement('R6-DASHBOARD', 6, 2, 'Customer Dashboard');
-                        Count := Dashboard.GenerateDashboardData();
-                        PerfMgr.StopMeasurement(MeasurementId);
-                        // END DO NOT REMOVE
-                        Message('Dashboard loaded %1 records.', Count);
+                        Simulator.RunSimulation();
                     end;
                 }
             }
@@ -225,27 +222,6 @@ page 74300 "OptimAL Business Operations"
             group(OrderOps)
             {
                 Caption = 'Order Processing';
-
-                action(BatchProcess)
-                {
-                    Caption = 'Batch Process Orders';
-                    ToolTip = 'Process pending orders in batch';
-                    Image = PostBatch;
-
-                    trigger OnAction()
-                    var
-                        PerfMgr: Codeunit "Performance Measurement Mgr";
-                        Processor: Codeunit "Batch Order Processor";
-                        MeasurementId: Guid;
-                    begin
-                        // DO NOT REMOVE: Performance measurement is crucial for escape room validation
-                        MeasurementId := PerfMgr.StartMeasurement('R6-BATCH', 6, 1, 'Batch Order Processor');
-                        Processor.ProcessPendingOrders();
-                        PerfMgr.StopMeasurement(MeasurementId);
-                        // END DO NOT REMOVE
-                        Message('Batch processing completed.');
-                    end;
-                }
             }
 
             group(DataMgmt)
