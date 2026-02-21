@@ -191,8 +191,8 @@ page 74300 "OptimAL Business Operations"
 
                 action(CustomerOrderStats)
                 {
-                    Caption = 'Customer Order Analytics';
-                    ToolTip = 'Build an order report with customer details';
+                    Caption = 'Customer Order Report';
+                    ToolTip = 'Build a report combining customer and order data';
                     Image = Statistics;
 
                     trigger OnAction()
@@ -203,11 +203,11 @@ page 74300 "OptimAL Business Operations"
                         Count: Integer;
                     begin
                         // DO NOT REMOVE: Performance measurement is crucial for escape room validation
-                        MeasurementId := PerfMgr.StartMeasurement('R7-N+1', 7, 1, 'Customer Order Analytics');
-                        Count := Analytics.BuildOrderReport();
+                        MeasurementId := PerfMgr.StartMeasurement('R7-N+1', 7, 1, 'Customer Order Report');
+                        Count := Analytics.BuildCustomerOrderReport();
                         PerfMgr.StopMeasurement(MeasurementId);
                         // END DO NOT REMOVE
-                        Message('Order report complete: %1 orders processed', Count);
+                        Message('Report complete: %1 rows processed', Count);
                     end;
                 }
             }
