@@ -4,19 +4,14 @@ codeunit 74350 "Customer Order Analytics"
 
     procedure BuildCustomerOrderReport() TotalProcessed: Integer
     var
-        Customer: Record "Performance Test Customer";
-        Order: Record "Performance Test Order";
+        Qry: Query "Customer Order Report";
     begin
-        // Nested loop: manually joining Customer --> Order record by record
-        if Customer.FindSet() then
-            repeat
-                Order.SetRange("Customer No.", Customer."No.");
-                if Order.FindSet() then
-                    repeat
-                        // Combine customer + order data for each report line
-                        TotalProcessed += 1;
-                    until Order.Next() = 0;
-            until Customer.Next() = 0;
+        Qry.Open();
+        while Qry.Read() do begin
+            // Access Qry.CustomerNo, Qry.CustomerName, Qry.OrderNo, Qry.OrderAmount
+            TotalProcessed += 1;
+        end;
+        Qry.Close();
     end;
 
 }
