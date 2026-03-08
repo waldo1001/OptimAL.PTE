@@ -28,8 +28,9 @@ codeunit 74300 "Restart Data Generation Jobs"
         repeat
             JobQueueEntry."User ID" := CopyStr(UserId(), 1, MaxStrLen(JobQueueEntry."User ID"));
             JobQueueEntry."Earliest Start Date/Time" := CurrentDateTime();
-            JobQueueEntry.Status := JobQueueEntry.Status::Ready;
             JobQueueEntry.Modify();
+            Commit(); // Commit User ID change before SetStatus so the task scheduler sees the correct user
+            JobQueueEntry.SetStatus(JobQueueEntry.Status::Ready);
         until JobQueueEntry.Next() = 0;
     end;
 }
