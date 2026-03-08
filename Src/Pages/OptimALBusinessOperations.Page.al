@@ -76,7 +76,7 @@ page 74300 "OptimAL Business Operations"
                         MeasurementId: Guid;
                         Count: Integer;
                     begin
-                        PerfTestCust.SelectLatestVersion(); // DO NOT REMOVE — needed for consistent demo results
+                        SelectLatestVersion(); // DO NOT REMOVE — needed for consistent demo results
                         // DO NOT REMOVE: Performance measurement is crucial for escape room validation
                         MeasurementId := PerfMgr.StartMeasurement('R4-EXPORT', 4, 1, 'Export Customers');
                         Count := Exporter.ExportCustomerList();
@@ -100,7 +100,7 @@ page 74300 "OptimAL Business Operations"
                         MeasurementId: Guid;
                         Count: Integer;
                     begin
-                        PerfTestCust.SelectLatestVersion(); // DO NOT REMOVE — needed for consistent demo results
+                        SelectLatestVersion(); // DO NOT REMOVE — needed for consistent demo results
                         // DO NOT REMOVE: Performance measurement is crucial for escape room validation
                         MeasurementId := PerfMgr.StartMeasurement('R4-ACTIVE', 4, 2, 'Active Customer Report');
                         Count := Reporter.GetActiveCustomerCount();
@@ -163,7 +163,7 @@ page 74300 "OptimAL Business Operations"
                         MeasurementId: Guid;
                         Total: Decimal;
                     begin
-                        PerfTestCust.SelectLatestVersion(); // DO NOT REMOVE — needed for consistent demo results
+                        SelectLatestVersion(); // DO NOT REMOVE — needed for consistent demo results
                         // DO NOT REMOVE: Performance measurement is crucial for escape room validation
                         MeasurementId := PerfMgr.StartMeasurement('R5-SALES', 5, 2, 'Calculate Total Sales');
                         Total := Analyzer.CalculateTotalSales();
@@ -187,7 +187,7 @@ page 74300 "OptimAL Business Operations"
                         MeasurementId: Guid;
                         Revenue: Decimal;
                     begin
-                        PerfTestCust.SelectLatestVersion(); // DO NOT REMOVE — needed for consistent demo results
+                        SelectLatestVersion(); // DO NOT REMOVE — needed for consistent demo results
                         // DO NOT REMOVE: Performance measurement is crucial for escape room validation
                         MeasurementId := PerfMgr.StartMeasurement('R5-REVENUE', 5, 1, 'Calculate Revenue');
                         Revenue := Calculator.GetTotalRevenue();
@@ -211,7 +211,7 @@ page 74300 "OptimAL Business Operations"
                         MeasurementId: Guid;
                         Count: Integer;
                     begin
-                        PerfTestCust.SelectLatestVersion(); // DO NOT REMOVE — needed for consistent demo results
+                        SelectLatestVersion(); // DO NOT REMOVE — needed for consistent demo results
                         // DO NOT REMOVE: Performance measurement is crucial for escape room validation
                         MeasurementId := PerfMgr.StartMeasurement('R7-N+1', 7, 1, 'Customer Order Report');
                         Count := Analytics.BuildCustomerOrderReport();
