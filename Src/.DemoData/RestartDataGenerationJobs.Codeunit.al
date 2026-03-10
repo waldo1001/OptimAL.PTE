@@ -1,7 +1,13 @@
 codeunit 74300 "Restart Data Generation Jobs"
 {
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"LogInManagement", 'OnBeforeLogInEnd', '', false, false)]
-    local procedure OnAfterCompanyOpen()
+    // [EventSubscriber(ObjectType::Codeunit, Codeunit::"LogInManagement", 'OnBeforeLogInEnd', '', false, false)]
+    // local procedure OnAfterCompanyOpen()
+    // begin
+    //     RestartPendingDataGenerationJobs();
+    // end;
+
+    [EventSubscriber(ObjectType::Page, page::"Business Manager Role Center", OnOpenPageEvent, '', false, false)]
+    local procedure OnOpenBusinessManagerRoleCenter()
     begin
         RestartPendingDataGenerationJobs();
     end;
