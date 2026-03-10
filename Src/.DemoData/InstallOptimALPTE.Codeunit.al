@@ -53,8 +53,16 @@ codeunit 74390 "Install OptimAL PTE"
             JobQueueEntry."Parameter String" := Format(StartNo) + '|' + Format(EndNo);
             JobQueueEntry."Maximum No. of Attempts to Run" := 2;
             JobQueueEntry."Earliest Start Date/Time" := CurrentDateTime();
-            JobQueueEntry.Status := JobQueueEntry.Status::"On Hold"; // Real user will start it via OnBeforeLogInEnd
+            JobQueueEntry."User ID" := CopyStr(UserId(), 1, MaxStrLen(JobQueueEntry."User ID"));
+            JobQueueEntry.Status := JobQueueEntry.Status::"On Hold";
             JobQueueEntry.Insert(true);
+
+            // Only activate immediately if we have a user context.
+            // If not, leave On Hold — RestartDataGenerationJobs will activate them on first user login.
+            if JobQueueEntry."User ID" <> '' then begin
+                Commit(); // Commit User ID before SetStatus so the task scheduler sees the correct user
+                JobQueueEntry.SetStatus(JobQueueEntry.Status::Ready);
+            end;
         end;
     end;
 
