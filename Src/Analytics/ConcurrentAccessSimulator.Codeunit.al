@@ -150,7 +150,7 @@ codeunit 74346 "Concurrent Access Simulator"
         CommitBlockMs: Integer;
         ReadUncommittedBlockMs: Integer;
         ResultLbl: Label 'Concurrent Access Simulation Results\\\STATUS: %5\\\Test 1 - Batch Processor vs Credit Approval:\  Credit approval blocked for: %1 ms\  %2\\Test 2 - Lock Holder vs Order Validator:\  %3\  %4\\Check Performance Measurements for details.', Comment = '%1 = commit block ms, %2 = commit result, %3 = readuncommitted time, %4 = readuncommitted result, %5 = status';
-        BlockedLbl: Label 'BLOCKED - The batch holds locks the entire time; add Commit() to release them periodically';
+        BlockedLbl: Label 'BLOCKED - The batch holds locks the entire time; Find a way to release the lock periodically.';
         CommitFixedLbl: Label 'FIXED - Commit() releases locks between intervals';
         LockedLbl: Label 'BLOCKED - lock timeout: the subscriber left UpdLocks that conflict with another session';
         ReadUncommittedFixedLbl: Label 'FIXED - validator completed: ReadIsolation bypassed the subscriber locks';
